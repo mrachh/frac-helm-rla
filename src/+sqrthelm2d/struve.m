@@ -92,13 +92,17 @@ function [cvals] = eval_struve_loc(z)
        0.13500760099128853258969852643313634D-01,
        0.91371732847652890752352921528928191D-02,
        0.46001586784217374251199154849668279D-02];
-       
-        [Zs,Rs] = ndgrid(z,roots);
-        [~ ,Ws] = ndgrid(z,weights);
-        cvals = 1./(sqrt(1.0d0-Rs.*Rs)).* ...
-           (exp(1i*Rs.*Zs)-(1+Rs.*(exp(1i.*Zs)-1))).*Ws;
+    
+        ZR = z*roots.';
+        weights = weights./sqrt(1-roots.*roots);
+        zz = exp(1i*z)-1;
+        s = sum(weights.*roots);
+        sw = sum(weights);
+        cvals = (exp(1i*ZR))*weights;
         cvals = sum(cvals,2);
-        cvals = 2/pi*(cvals + pi/2+(exp(1i*z)-1));
+        cvals = cvals - zz*s-sw;
+        cvals = 2/pi*(cvals + pi/2+zz);
+
 
 end
 

@@ -1,6 +1,6 @@
 
 ckb = 2*pi;
-lmax= 3;
+lmax= 10;
 npts= 101;
 
 xs = linspace(-lmax, lmax, npts);

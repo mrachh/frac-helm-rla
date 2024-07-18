@@ -10,24 +10,24 @@ function Sout = compute_factorization(S, V, opts)
     if nargin < 3
         opts = [];
     end
-    p = 64;
+    p = 128;
     if isfield(opts, 'p')
         p = opts.p;
     end
 
-    nr = 10;
+    nr = 5;
     if isfield(opts, 'nr')
         nr = opts.nr;
     end
     
-    tol = 1e-7;
+    tol = 1e-9;
     if isfield(opts, 'tol')
         tol = opts.tol;
     end
 
-    occ = 2000;
+    occ = 1000;
     if isfield(opts, 'occ')
-        occ = 2000;
+        occ = opts.occ;
     end
 
     verb = true;
@@ -47,7 +47,7 @@ function Sout = compute_factorization(S, V, opts)
     opts_use = [];
     opts_use.verb = verb;
 
-    matind = @(i,j) frac_mat_fun(i, j, X, Y, V, ckb, dx, S.spmat_with_v);
+    matind = @(i,j) frac_mat_fun(i, j, X, Y, sqrt(V(:)), ckb, dx, S.spmat_with_v);
     F = rskelf(matind, xpts, occ, rank_or_tol, pfun, opts_use); 
     Sout = S;
     Sout.F = F;
@@ -70,28 +70,36 @@ function [Kpxy,nbr] = pxyfun_frac(x,slf,nbr,proxy,pw,l,ctr,vin,ckb,dx)
     [wt,~ ] = ndgrid(pw,x(1,slf));
     dx1 = xt-xs;
     dx2 = yt-ys;
-    Kpxy1 = sqrthelm2d.green(dx1,dx2,ckb)*dx^2;
-    Kpxy2 = sqrthelm2d.green(dx1,dx2,ckb)*diag(ckb*vin(slf));
-    Kpxy2 = Kpxy2.*wt;
-    Kpxy = [Kpxy1;Kpxy2];
+    gf = sqrthelm2d.green(dx1,dx2,ckb);
+    %Kpxy1 = gf*dx;
+    Kpxy2 = gf*diag(ckb*(vin(slf)));
+    Kpxy2 = dx*Kpxy2.*sqrt(wt);
+    Kpxy = [Kpxy2];
     dx = x(1,nbr) - ctr(1);
     dy = x(2,nbr) - ctr(2);
     dist = sqrt(dx.^2 + dy.^2);
     nbr = nbr(dist/norm(l) < 1.5);
-
 end
 
-
 %%
-function [amat] = frac_mat_fun(i,j,x,y,v,ckb,dx,scorr)
+function [amat] = frac_mat_fun(i, j, x, y, v, ckb, dx, scorr)
+
+    ni = numel(i);
+    nj = numel(j);
+    if (ni*nj == 0)
+        amat = zeros(ni,nj);
+        return
+    end
     [XS,XT] = ndgrid(x(i),x(j));
     [YS,YT] = ndgrid(y(i),y(j));
     dx1 = XS-XT;
     dx2 = YS-YT;
     amat = sqrthelm2d.green(dx1,dx2,ckb);
     amat(isnan(amat)) = 0;
-    amat = diag(-ckb*dx^2*v(i).')*amat;
+    vmat = (-ckb*dx^2*v(i))*v(j).';
+    amat = vmat.*amat;
     amat = amat + scorr(i,j);
+
 end
 
 %%

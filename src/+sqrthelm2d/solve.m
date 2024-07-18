@@ -30,8 +30,9 @@ function [x, Sout] = solve(S, V, y0, opts)
         if ifcompute_f
             Sout = sqrthelm2d.compute_factorization(Sout, V);
         end
-
-        x = rskelf_sv(Sout.F, y0(:));
+        y02 = y0(:)./sqrt(V(:));
+        x = rskelf_sv(Sout.F, y02(:));
+        x = x.*sqrt(V(:));
 
     else
         Sout = S;
