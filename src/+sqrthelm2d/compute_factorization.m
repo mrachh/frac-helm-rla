@@ -1,9 +1,5 @@
 function Sout = compute_factorization(S, V, opts)
-    lmax = S.lmax;
-    npts = S.npts;
-    xs = linspace(-lmax, lmax, npts);
-    ys = xs;
-    [X,Y] = ndgrid(xs,ys);
+    xpts = S.xpts;
     dx = S.dx;
     ckb = S.ckb;
 
@@ -37,7 +33,7 @@ function Sout = compute_factorization(S, V, opts)
 
     [proxy, ~, pw] = proxy_circ_pts(p, nr);
 
-    xpts = [X(:).';Y(:).'];
+    
 
     pfun = @(xfun,slf,nbr,l,ctr) pxyfun_frac(xfun, slf, nbr, proxy, pw,...
         l, ctr, V(:), ckb, dx);

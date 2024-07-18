@@ -1,29 +1,43 @@
+ckb = 10;
+npts = 401;
+lmax= pi/2;
 
-ckb = 2*pi;
-lmax= 10;
-npts= 101;
 
-xs = linspace(-lmax, lmax, npts);
-ys = xs;
-[X,Y] = ndgrid(xs,ys);
-dx = xs(2)-xs(1);
+% setup targinfo
+nt = 5;
+thet = 0:2*pi/nt:2*pi-2*pi/nt;
+rtarg = 10;
+targinfo = rtarg*[cos(thet); sin(thet)];
+
 
 cfs = sqrthelm2d.get_diag_correction(ckb, lmax, npts);
-%%
+S = sqrthelm2d.prepare_solver(lmax, npts, ckb, cfs);
 
-Sprecomp = sqrthelm2d.prepare_solver(lmax, npts, dx, ckb, cfs);
-
-V = qfuns.gaussian(X,Y);
+V = qfuns.gaussian(S.xpts(1,:), S.xpts(2,:));
+V = V(:);
 theta_in = pi/3;
-y0 = ckb*exp(1i*X*cos(theta_in)*ckb+1i*Y*sin(theta_in)*ckb).*V;
+y0 = ckb*exp(1i*ckb*(S.xpts(1,:)*cos(theta_in) + S.xpts(2,:)*sin(theta_in)));
+y0 = y0(:);
+y0 = y0.*V;
 
 opts = [];
 opts.ifflam = false;
-tic, xout = sqrthelm2d.solve(Sprecomp, V, y0, opts); toc;
+tic, xout = sqrthelm2d.solve(S, V, y0, opts); toc;
 
+
+
+% evaluate potential at all targets
+pot = sqrthelm2d.postprocess(S, xout, targinfo);
+
+
+
+
+
+
+%%
 opts.ifflam = true;
-tic, [xout2, Sprecomp] = sqrthelm2d.solve(Sprecomp, V, y0, opts); toc;
+tic, [xout2, S] = sqrthelm2d.solve(S, V, y0, opts); toc;
 
 %%
 opts.ifcompute_f = false;
-tic, [xout3] = sqrthelm2d.solve(Sprecomp, V, y0, opts); toc;
+tic, [xout3] = sqrthelm2d.solve(S, V, y0, opts); toc;

@@ -1,4 +1,4 @@
-function [S] = prepare_solver(lmax, npts, dx, ckb, cfs)
+function [S] = prepare_solver(lmax, npts, ckb, cfs)
 %
 %  Prepare solver either iterative or direvt
 %  lmax: max excursion in l
@@ -12,15 +12,21 @@ function [S] = prepare_solver(lmax, npts, dx, ckb, cfs)
     S = [];
     S.lmax = lmax;
     S.npts = npts;
-    S.dx = dx;
+    
     S.ckb = ckb;
     S.cfs = cfs;
     n = npts*npts;
     S.n = n;
+
+    xs = linspace(-lmax, lmax, npts);
+    ys = xs;
+    [X,Y] = ndgrid(xs,ys);
+    xpts = [X(:).';Y(:).'];
+    S.xpts = xpts;
+    S.dx = xs(2)-xs(1);
     
-    
-    S.spmat = sqrthelm2d.get_sparse_correction(npts, dx, ckb, cfs);    
-    S.gmat = sqrthelm2d.build_gmat(lmax, dx, ckb, cfs);    
+    S.spmat = sqrthelm2d.get_sparse_correction(npts, S.dx, ckb, cfs);    
+    S.gmat = sqrthelm2d.build_gmat(lmax, S.dx, ckb, cfs);    
 
 
 end

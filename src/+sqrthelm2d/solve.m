@@ -4,7 +4,7 @@ function [x, Sout] = solve(S, V, y0, opts)
     end
 
     ifflam = false;
-    tol = 1e-7;
+    tol = 1e-9;
     if isfield(opts, 'ifflam')
         ifflam = opts.ifflam;
     end
@@ -37,6 +37,6 @@ function [x, Sout] = solve(S, V, y0, opts)
     else
         Sout = S;
         fun_mat = @(x) sqrthelm2d.apply_op_fast(x, S.gmat, S.npts, S.dx, S.ckb, V);
-        x = gmres(fun_mat, y0(:), [], tol, S.n);
+        x = gmres(fun_mat, y0(:), 200, tol, 20);
     end
 end
