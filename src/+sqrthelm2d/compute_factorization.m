@@ -42,7 +42,9 @@ function Sout = compute_factorization(S, V, opts)
     
     opts_use = [];
     opts_use.verb = verb;
-
+    
+    X = S.xpts(1,:).';
+    Y = S.xpts(2,:).';
     matind = @(i,j) frac_mat_fun(i, j, X, Y, sqrt(V(:)), ckb, dx, S.spmat_with_v);
     F = rskelf(matind, xpts, occ, rank_or_tol, pfun, opts_use); 
     Sout = S;

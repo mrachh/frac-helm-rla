@@ -1,4 +1,4 @@
-function [x, Sout] = solve(S, V, y0, opts)
+function [x, Sout] = compute_scattered_field(S, V, x0, opts)
     if nargin < 4
         opts = [];
     end
@@ -13,15 +13,16 @@ function [x, Sout] = solve(S, V, y0, opts)
         tol = opts.tol;
     end
 
-    ifupdate_spmat = true;
+    ifupdate_spmat = false;
     if isfield(opts, 'ifupdate_spmat')
         ifupdate_spmat = opts.ifupdate_spmat;
     end
 
-    ifcompute_f = true;
+    ifcompute_f = false;
     if isfield(opts, 'ifcompute_f')
         ifcompute_f = opts.ifcompute_f;
     end
+    Sout = S;
     if ifflam
         if ifupdate_spmat
             Sout = sqrthelm2d.update_spmat_with_v(S, V);
@@ -30,13 +31,12 @@ function [x, Sout] = solve(S, V, y0, opts)
         if ifcompute_f
             Sout = sqrthelm2d.compute_factorization(Sout, V);
         end
-        y02 = y0(:)./sqrt(V(:));
-        x = rskelf_sv(Sout.F, y02(:));
-        x = x.*sqrt(V(:));
-
-    else
-        Sout = S;
-        fun_mat = @(x) sqrthelm2d.apply_op_fast(x, S.gmat, S.npts, S.dx, S.ckb, V);
-        x = gmres(fun_mat, y0(:), 200, tol, 40);
+        x02 = x0(:).*sqrt(V(:));
+        x = rskelf_mv(Sout.F, x02(:));
+        x = x./sqrt(V(:));
+        x = -(x - x0)/S.ckb./V(:);
+    else 
+        x = sqrthelm2d.apply_op_fast(x0, S.gmat, S.npts, S.dx, S.ckb, V);
+        x = -(x - x0)/S.ckb./V(:);
     end
 end

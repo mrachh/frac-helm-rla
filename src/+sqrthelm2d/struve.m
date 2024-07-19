@@ -109,20 +109,14 @@ end
 function [cval] = eval_struve_asymp(z)
 
         zv = -z;
-        eps = 1.0d-15;
 
         cval = 2/pi./zv;
         ct   = cval;
 
-        r1 = abs(ct);
-
-        for i=1:5
+        for i=1:10
             ct =-ct./zv./zv/4/i/i.* ...
                (2*i*(2*i-1)).^2;
-            r2 = abs(ct);
-
             cval = cval + ct;
-            r1 = r2;
         end
 
         h0 = besselh(0,z);
